@@ -1,0 +1,91 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: valheim
+  name: valheim
+  namespace: valheim
+spec:
+  replicas: 1
+  serviceName: valheim
+  selector:
+    matchLabels:
+      app: valheim
+  template:
+    metadata:
+      labels:
+        app: valheim
+    spec:
+      containers:
+        - name: valheim
+          image: mbround18/valheim:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 12000Mi
+              cpu: 7000m
+            limits:
+              memory: 12000Mi
+              cpu: 7000m
+          env:
+            - name: PORT
+              value: "2456"
+            - name: NAME
+              value: "Valheim on Kuberenetes"
+            - name: WORLD
+              value: "Dedicated"
+            - name: PASSWORD
+              value: "praxis"
+            - name: TZ
+              value: "America/Chicago"
+            - name: PUBLIC
+              value: "1"
+            - name: AUTO_UPDATE
+              value: "1"
+            - name: AUTO_UPDATE_SCHEDULE
+              value: "0 1 * * *"
+            - name: AUTO_BACKUP
+              value: "1"
+            - name: AUTO_BACKUP_SCHEDULE
+              value: "*/15 * * * *"
+            - name: AUTO_BACKUP_REMOVE_OLD
+              value: "1"
+            - name: AUTO_BACKUP_DAYS_TO_LIVE
+              value: "3"
+            - name: AUTO_BACKUP_ON_UPDATE
+              value: "1"
+            - name: AUTO_BACKUP_ON_SHUTDOWN
+              value: "1"
+            - name: UPDATE_ON_STARTUP
+              value: "0"
+          volumeMounts:
+            - mountPath: /home/steam/backups
+              name: valheim/saves
+            - mountPath: /home/steam/.config/unity3d/IronGate/Valheim
+              name: /valheim/server
+            - mountPath: /home/steam/valheim
+              name: /valheim/backups
+  volumeClaimTemplates:
+    - metadata:
+        name: valheim
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 30Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    service: valheim
+  name: valheim
+spec:
+  ports:
+    - port: 2456
+      targetPort: 2456
+  selector:
+    app: valheim
+  type: LoadBalancer

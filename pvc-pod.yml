@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: task-pv-pod
+  namespace: minecraft
+spec:
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: data-mc-ftba-0
+  containers:
+    - name: task-pv-container
+      image: nginx
+      resources:
+        requests:
+          memory: 500Mi
+          cpu: 500m
+        limits:
+          memory: 500Mi
+          cpu: 1000m
+      volumeMounts:
+        - mountPath: /data
+          name: task-pv-storage
